@@ -290,7 +290,7 @@ export class SwaggerExplorer {
     opts[webRouter.requestMethod] = {
       summary: operMeta?.metadata?.summary,
       description: operMeta?.metadata?.description,
-      // operationId: `${webRouter.requestMethod}_${(operMeta?.metadata?.operationId || webRouter.method)}`,
+      operationId: `${webRouter.requestMethod}_${(operMeta?.metadata?.operationId || webRouter.method)}`,
       tags: operMeta?.metadata?.tags || [],
     };
     /**

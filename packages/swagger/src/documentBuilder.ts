@@ -76,8 +76,10 @@ export class DocumentBuilder {
   public addSchema(schema: Record<string, SchemaObject>) {
     if (!this.document.components.schemas) {
       this.document.components.schemas = {};
+      this.document.definitions = {};
     }
     Object.assign(this.document.components.schemas, schema);
+    Object.assign(this.document.definitions, schema);
     return this;
   }
 

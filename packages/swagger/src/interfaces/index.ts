@@ -9,6 +9,7 @@ export interface OpenAPIObject {
   servers?: ServerObject[];
   paths: PathsObject;
   components?: ComponentsObject;
+  definitions?: ComponentsObject['schemas'];
   security?: SecurityRequirementObject[];
   tags?: TagObject[];
   externalDocs?: ExternalDocumentationObject;

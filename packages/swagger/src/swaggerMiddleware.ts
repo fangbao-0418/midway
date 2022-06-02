@@ -4,10 +4,7 @@ import type {
   IMidwayContext,
   NextFunction,
 } from '@midwayjs/core';
-import { safeRequire } from '@midwayjs/core';
 import {
-  Config,
-  Init,
   Inject,
   Provide,
   Scope,
@@ -23,51 +20,54 @@ import { SwaggerExplorer } from './swaggerExplorer';
 export class SwaggerMiddleware
   implements IMiddleware<IMidwayContext, NextFunction, unknown>
 {
-  @Config('swagger')
-  private swaggerConfig: any;
-
-  private swaggerUiAssetPath: string;
 
   @Inject()
   private swaggerExplorer: SwaggerExplorer;
 
-  @Init()
-  async init() {
-    const { getAbsoluteFSPath } = safeRequire('swagger-ui-dist');
-    if (getAbsoluteFSPath) {
-      this.swaggerUiAssetPath = getAbsoluteFSPath();
-    }
-  }
+  swaggerPath = 'swagger-ui';
 
   resolve(app: IMidwayApplication) {
     if (app.getFrameworkType() === MidwayFrameworkType.WEB_EXPRESS) {
       return async (req: any, res: any, next: NextFunction) => {
-        const pathname = req.path;
-        if (
-          !this.swaggerUiAssetPath ||
-          pathname.indexOf(this.swaggerConfig.swaggerPath) === -1
-        ) {
+        let pathname = req.path;
+        if (pathname.indexOf('/swagger-resources') > -1) {
+          const url = 'http://' + req.host + '/swagger-ui/index.json';
+          res.send(
+            JSON.stringify([
+              {
+                name: 'default',
+                url: url,
+                swaggerVersion: '3.0',
+                location: url,
+              },
+            ])
+          );
+          return;
+        }
+        if (pathname.indexOf(this.swaggerPath) === -1) {
           return next();
         }
         const arr = pathname.split('/');
-        let lastName = arr.pop();
+        const lastName = arr.pop();
         if (lastName === 'index.json') {
           res.send(this.swaggerExplorer.getData());
           return;
         }
-        if (!lastName) {
-          lastName = 'index.html';
+
+        if (['swagger-ui', ''].includes(lastName)) {
+          pathname = this.swaggerPath + '/index.html'
+        }
+        let content = '';
+        try {
+          content = readFileSync(join(__dirname, '../public', pathname), {
+            encoding: 'utf-8',
+          });
+        } catch (e) {
+          content = '';
+          res.send('Not Found');
+          return;
         }
 
-        let content = readFileSync(join(this.swaggerUiAssetPath, lastName), {
-          encoding: 'utf-8',
-        });
-        if (
-          lastName === 'index.html' ||
-          lastName === 'swagger-initializer.js'
-        ) {
-          content = this.replaceInfo(content);
-        }
         const ext = extname(lastName);
         if (ext === '.js') {
           res.type('application/javascript');
@@ -83,32 +83,43 @@ export class SwaggerMiddleware
       };
     } else {
       return async (ctx: IMidwayContext, next: NextFunction) => {
-        const pathname = (ctx as any).path;
-        if (
-          !this.swaggerUiAssetPath ||
-          pathname.indexOf(this.swaggerConfig.swaggerPath) === -1
-        ) {
+        let pathname = (ctx as any).path;
+        if (pathname.indexOf('/swagger-resources') > -1) {
+          const url = 'http://' + (ctx as any).host + '/swagger-ui/index.json';
+          (ctx as any).body = JSON.stringify([
+            {
+              name: 'default',
+              url: url,
+              swaggerVersion: '3.0',
+              location: url,
+            },
+          ]);
+          return;
+        }
+
+        if (pathname.indexOf(this.swaggerPath) === -1) {
           return next();
         }
         const arr = pathname.split('/');
-        let lastName = arr.pop();
+        const lastName = arr.pop();
         if (lastName === 'index.json') {
           (ctx as any).body = this.swaggerExplorer.getData();
           return;
         }
-        if (!lastName) {
-          lastName = 'index.html';
+        if (['swagger-ui', ''].includes(lastName)) {
+          pathname = this.swaggerPath + '/index.html'
+        }
+        let content = '';
+        try {
+          content = readFileSync(join(__dirname, '../public', pathname), {
+            encoding: 'utf-8',
+          });
+        } catch (e) {
+          content = '';
+          (ctx as any).body = 'Not Found'
+          return;
         }
 
-        let content = readFileSync(join(this.swaggerUiAssetPath, lastName), {
-          encoding: 'utf-8',
-        });
-        if (
-          lastName === 'index.html' ||
-          lastName === 'swagger-initializer.js'
-        ) {
-          content = this.replaceInfo(content);
-        }
         const ext = extname(lastName);
         if (ext === '.js') {
           (ctx as any).set('Content-Type', 'application/javascript');
@@ -121,15 +132,9 @@ export class SwaggerMiddleware
         }
 
         (ctx as any).body = content;
+
       };
     }
-  }
-
-  replaceInfo(content: string): string {
-    return content.replace(
-      '"https://petstore.swagger.io/v2/swagger.json",',
-      `location.href.replace('${this.swaggerConfig.swaggerPath}/index.html', '${this.swaggerConfig.swaggerPath}/index.json'),\n validatorUrl: null,`
-    );
   }
 
   static getName() {

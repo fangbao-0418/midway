@@ -1,12 +1,13 @@
 {
-  "name": "midwayjs-swagger2",
-  "version": "0.0.3",
+  "name": "midwayjs-kinfe4j2",
+  "version": "0.0.1",
   "main": "dist/index",
   "typings": "index.d.ts",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "index.d.ts"
+    "index.d.ts",
+    "public"
   ],
   "devDependencies": {
     "@midwayjs/core": "^3.3.5",

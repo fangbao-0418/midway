@@ -1,14 +1,50 @@
-# midwayjs swagger module
+# midwayjs swagger knife4j2
+
+## Example
+
+访问地址: {host}/swagger-ui/index.html
+
+![示例图](./public/screen.png)
 
 ## Thanks to [@nestjs/swagger](https://github.com/nestjs/swagger)
 
-[![Package Quality](http://npm.packagequality.com/shield/midway-core.svg)](http://packagequality.com/#?package=midway-core)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/midwayjs/midway/pulls)
+## Usage
+```dotnetcli
+// configuration.ts
+import * as swagger from 'midwayjs-knife4j2';
+
+...
+
+@Configuration({
+  imports: [
+    {
+      component: swagger,
+      enabledEnvironment: ['local', 'dev'],
+    }
+  ]
+})
+...
+
+// xxx.controller.ts
+import { ApiResponse } from 'midwayjs-knife4j2';
+
+...
+@Get('/overview')
+@ApiResponse({
+  status: 200,
+  description: '控制台',
+  type: WorkbenchDto,
+})
+async getOverview(): Promise<WorkbenchDto> {
+  return this.workbenchService.getData();
+}
+...
+```
 
 this is a sub package for midway.
 
-Document: [https://midwayjs.org/midway](https://midwayjs.org/midway)
+Document: [https://midwayjs.org/docs/extensions/swagger](https://midwayjs.org/docs/extensions/swagger)
 
 ## License
 
-[MIT]((http://github.com/midwayjs/midway/blob/master/LICENSE))
+[MIT]((https://github.com/fangbao-0418/midway/blob/master/LICENSE))

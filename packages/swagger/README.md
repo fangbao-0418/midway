@@ -4,7 +4,7 @@
 
 访问地址: {host}/swagger-ui/index.html
 
-![示例图](./public/screen.png)
+![示例图](https://upload-images.jianshu.io/upload_images/5270139-1530f988b12ab8e9.png)
 
 ## Thanks to [@nestjs/swagger](https://github.com/nestjs/swagger)
 
